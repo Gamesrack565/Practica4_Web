@@ -1,0 +1,31 @@
+EXPLICACION DE COMO HACER UN MANEJO DE VERSIONES
+
+MAYOR.MENOR.PARCHE
+
+1. El Número Entero Principal (MAYOR)
+El primer número, que es un número entero (por ejemplo, el "2" en 2.5.1), indica un cambio de versión principal y mayormente incompatible.
+
+¿Cuándo cambia? Cuando introduces cambios que rompen la compatibilidad con versiones anteriores. Es decir, si un usuario está usando la versión 1.x.x y actualiza a la versión 2.0.0, el código que funcionaba antes podría dejar de funcionar o necesitar ajustes importantes.
+
+Ejemplo: Pasar de la versión 1.x.x a la 2.0.0. Esto comunica que la nueva versión es significativamente diferente y requiere precaución al actualizar.
+
+
+2. Los Números Decimales (MENOR y PARCHE)
+Los siguientes números, que se ven después de los puntos decimales, indican cambios compatibles con versiones anteriores.
+
+
+2.1. El Número Menor (MENOR)
+El segundo número entero (por ejemplo, el "5" en 2.5.1) indica que se han añadido nuevas funcionalidades de forma compatible.
+
+¿Cuándo cambia? Cuando se agregan nuevas características al software, pero sin romper la funcionalidad existente de la versión MAYOR actual.
+
+Ejemplo: Pasar de 2.1.x a 2.2.0. El código que funcionaba en 2.1.x seguirá funcionando en 2.2.0, pero ahora hay nuevas cosas que usar.
+
+
+2.2. El Número de Parche (PARCHE)
+El tercer número entero (por ejemplo, el "1" en 2.5.1) indica correcciones de errores o pequeñas mejoras, también de forma compatible.
+
+¿Cuándo cambia? Cuando se corrigen fallos (bugs) o se hacen pequeñas optimizaciones sin agregar nuevas funciones ni romper las existentes.
+
+Ejemplo: Pasar de 2.5.0 a 2.5.1. Es una actualización segura que simplemente soluciona un problema sin cambiar nada más.
+
