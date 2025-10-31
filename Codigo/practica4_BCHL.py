@@ -516,6 +516,7 @@ def delete_envio(envio_id: int, db: SessionDep):
     # No devuelve contenido.
     return
 
+
 # --- Métodos PUT (Reemplazo Completo) ---
 # Se omiten para simplificar, pero podrían añadirse si se necesita reemplazar
 # un recurso completo en lugar de actualizarlo parcialmente.
@@ -565,7 +566,7 @@ def optimizar_envio(envio_id: int, capacidad: float):
                 "id": items[i].id,
                 # Aquí tenías "nombre", pero el item no tiene "nombre". 
                 # Asumo que querías el nombre de la CATEGORÍA.
-                "nombre_categoria": items[i].categoria.nombre if items[i].categoria else "Sin categoría",
+                "nombres_categorias": [cat.nombre for cat in items[i].categorias] if items[i].categorias else [],
                 "peso": items[i].peso,
                 "ganancia": items[i].ganancia,
             }
