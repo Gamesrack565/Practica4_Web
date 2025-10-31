@@ -29,10 +29,10 @@
     \end{tikzpicture}
     
     \begin{spacing}{1.5}
-        {\Huge \bfseries \noindent PRÁCTICA 3}
+        {\Huge \bfseries \noindent PRÁCTICA 4}
         \vspace{10pt}
 
-        {\LARGE PERMANENCIA DE DATOS CON UNA BASE DE DATOS}
+        {\LARGE RELACIONES CON UNA BASE DE DATOS}
         
         \vspace{1cm}
         
@@ -70,23 +70,25 @@
 
 \section{Introducción}
 \subsection*{Planteamiento del problema}
-El problema que se aborda es la falta de persistencia de datos en la aplicación.
-La aplicación guarda los datos en la memoria mientras está funcionando, pero se pierde al reiniciar la aplicación.
-Se necesita una solución que garantice lo siguiente:
+Se busca crear una API web cuyo propósito sea gestionar un inventario y optimizar envíos con ayuda del algoritmo genético simple.
+Para la gestión del inventario, se debe garantizar lo siguiente:
 \begin{itemize}
-    \item La información de cada item se almacena de forma permanente.
-    \item Los usuarios pueden recuperar, actualizar o eliminar estos items en cualquier momento.
-    \item La aplicación mantenga un registro organizado y estructurado de todos los paquetes.
+    \item Permitir crear, leer, actualizar y borrar items, categorías y envíos en una base de datos.
 \end{itemize}
 
+Para la optimización de envíos, se debe garantizar lo siguiente:
+\begin{itemize}
+    \item Ofrecer un endpoint que utilice el AGS para resolver el problema de la mochila. Que calcule la combinación de items que maximiza la ganancia total de un envío sin exceder una capacidad de peso determinada.
+\end{itemize}
+
+
 \subsection*{Propuesta de solución}
-La solución propuesta es el desarrollo de una API RESTful utilizando FastAPI para la lógica de negocio y SQLModel para la gestión de la base de datos , permitiendo así la persistencia de datos.
+La solución propuesta es el desarrollo de una API con FastAPI para la lógica de negocio y SQLModel para la gestión de la base de datos.
 Componentes clave de la solución:
 \begin{itemize}
-    \item \textbf{Framework Web (FastAPI):} Se utiliza para construir la interfaz de la API, definiendo las rutas (URLs) que permitirán a los usuarios interactuar con la información de los paquetes. Un framework web moderno y rápido para construir APIs con Python 3.7+ basado en estándares como OpenAPI y JSON Schema.
-    \item \textbf{SQLModel:} Se emplea para definir la estructura de la información (qué es un "ítem", qué campos tiene, y cuál es su identificador único).
-    \item \textbf{Base de datos SQLite:} Se utiliza un motor de base de datos SQLite (database.db) para almacenar los datos en un archivo físico. De esta manera, la información perdura aunque la aplicación se detenga o se reinicie.
-    \item \textbf{SQLModel Engine y Session:} Se configura un motor de conexión (engine) y un sistema de sesiones (SessionDep) para establecer una comunicación eficiente y segura entre la aplicación y el archivo de la base de datos.
+    \item \textbf{SQLModel:} Para definir la estructura de la base de datos estableciendo categoría, item y envío como entidades principales.
+    \item \textbf{endpoints (URLs):} Para crear, leer, actualizar y borrar items, categorías y envíos.
+    \item \textbf{Algoritmo Génetico:} Realizará el calculo. Simulando un proceso de evolución para encontrar la mejor combinación de items que da la mayor ganancia total sin superar la capacidad.
 \end{itemize}
 
 \section{Fundamentos Teóricos}
