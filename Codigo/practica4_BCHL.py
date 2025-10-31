@@ -23,7 +23,7 @@ from fastapi import FastAPI, HTTPException, status, Depends
 # create_engine crea el motor de conexión a la base de datos.
 # Session maneja la comunicación (transacciones) con la base de datos.
 # Relationship define las relaciones entre diferentes modelos/tablas (ej. un Item pertenece a una Categoria).
-from sqlmodel import Field, create_engine, Session, SQLModel, Relationship
+from sqlmodel import Field, create_engine, Session, SQLModel, Relationship, select
 
 # Optional y List son tipos de datos de Python para definir campos que pueden ser None o listas.
 from typing import Optional, List
@@ -31,6 +31,10 @@ from typing import Optional, List
 # Annotated se usa junto con Depends para crear un tipo anotado para la inyección de dependencias de la sesión.
 from typing_extensions import Annotated
 
+
+from sqlalchemy.orm import joinedload
+
+from .Algoritmo_genetico import AlgoritmoGenetico, SeleccionRuleta
 # --- Definición de Modelos Base ---
 # Estos modelos definen la estructura fundamental de los datos,
 # sin incluir IDs o detalles específicos de la tabla de BD.
@@ -457,3 +461,65 @@ def delete_envio(envio_id: int, db: SessionDep):
 # Se omiten para simplificar, pero podrían añadirse si se necesita reemplazar
 # un recurso completo en lugar de actualizarlo parcialmente.
 # Su implementación sería similar al PATCH, pero usando model_dump() sin exclude_unset.
+
+
+
+@app.post("/optimizar/{envio_id}", tags=["Algoritmo Genético"])
+def optimizar_envio(envio_id: int, capacidad: float):
+    with Session(engine) as session:
+        #Obtenemos el envío por su ID
+        envio = session.get(Envio, envio_id)
+        if not envio:
+            raise HTTPException(status_code=404, detail="Envío no encontrado")
+
+        #Los items se obtienen directamente desde la relación
+        items = envio.items
+        if not items:
+            raise HTTPException(status_code=400, detail="Este envío no tiene items")
+
+        # Obtenemos pesos y ganancias
+        pesos = [i.peso for i in items]
+        ganancias = [i.ganancia for i in items]
+
+        # Ejecutamos el algoritmo genético
+        ag = AlgoritmoGenetico(pesos, ganancias, capacidad, SeleccionRuleta())
+        
+        # 1. 'ejecutar()' devuelve un objeto 'Sujetos', lo llamamos 'mejor_solucion'
+        mejor_solucion = ag.ejecutar()
+
+        # 2. Obtenemos la LISTA de genes desde el objeto
+        mejor_genes_lista = mejor_solucion.genes
+
+        # 3. La ganancia total es la aptitud ya calculada en el objeto
+        ganancia_total = mejor_solucion.aptitud
+
+        # 4. Calculamos el peso total usando la lista de genes
+        peso_total = 0
+        for i, gen in enumerate(mejor_genes_lista):
+            if gen == 1:
+                peso_total += pesos[i]
+
+        # 5. Creamos la lista de items usando 'mejor_genes_lista'
+        items_seleccionados = [
+            {
+                "indice": i,
+                "id": items[i].id,
+                # Aquí tenías "nombre", pero el item no tiene "nombre". 
+                # Asumo que querías el nombre de la CATEGORÍA.
+                "nombre_categoria": items[i].categoria.nombre if items[i].categoria else "Sin categoría",
+                "peso": items[i].peso,
+                "ganancia": items[i].ganancia,
+            }
+            for i, gen in enumerate(mejor_genes_lista) # <-- Usamos la lista
+            if gen == 1
+        ]
+
+        # 6. Devolvemos la lista de genes y los valores correctos
+        return {
+            "envio_id": envio.id,
+            "destino": envio.destino,
+            "mejor_genes": mejor_genes_lista, # <-- Devolvemos la lista
+            "ganancia_total": ganancia_total,
+            "peso_total": peso_total,
+            "items_seleccionados": items_seleccionados,
+        }
