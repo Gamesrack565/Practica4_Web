@@ -4,7 +4,7 @@
 #Higuera Pineda Angel Abraham
 #Lorenzo Silva Abad Rey
 
-#Librerias a utilizar s
+#Librerias a utilizar ss
 #Random sirve para utilizar funciones aleatorias
 import random
 #Nos permite crear interfaces en Python
