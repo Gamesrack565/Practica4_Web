@@ -37,15 +37,15 @@ from typing_extensions import Annotated
 
 class CategoriaBase(SQLModel):
     """Modelo base para Categoría: define los campos esenciales."""
-    nombre: str = Field(index=True, description="Nombre de la categoría (ej. Frágil, Peligroso)")
+    # MODIFICADO: Se añade 'unique=True' para asegurar que no haya nombres duplicados.
+    nombre: str = Field(index=True, description="Nombre de la categoría (ej. Frágil, Peligroso)", unique=True)
     descripcion: Optional[str] = Field(default=None, description="Materiales o descripción de la categoría")
 
 class ItemBase(SQLModel):
-    """Modelo base para Item: campos originales más la relación con Categoría."""
+    """Modelo base para Item: campos originales sin IDs de relación."""
+    # MODIFICADO: Se elimina 'categoria_id' para permitir una relación muchos-a-muchos.
     ganancia: float
     peso: float
-    # Clave foránea: indica que este campo se relaciona con la columna 'id' de la tabla 'categoria'.
-    categoria_id: Optional[int] = Field(default=None, foreign_key="categoria.id")
 
 class EnvioBase(SQLModel):
     """Modelo base para Envío: define el destino."""
@@ -56,13 +56,26 @@ class EnvioBase(SQLModel):
 # Heredan de los modelos Base y añaden el ID y las relaciones.
 # 'table=True' le indica a SQLModel que cree una tabla para este modelo.
 
+# --- NUEVO ---
+class ItemCategoria(SQLModel, table=True):
+    """
+    Tabla de enlace (asociativa) para la relación muchos-a-muchos
+    entre Item y Categoria. Contiene las claves foráneas de ambas tablas.
+    """
+    item_id: Optional[int] = Field(
+        default=None, foreign_key="item.id", primary_key=True # Parte de la clave primaria compuesta.
+    )
+    categoria_id: Optional[int] = Field(
+        default=None, foreign_key="categoria.id", primary_key=True # Parte de la clave primaria compuesta.
+    )
+
 class Categoria(CategoriaBase, table=True):
     """Modelo de la tabla 'categoria'. Incluye ID y la relación con Items."""
     id: Optional[int] = Field(default=None, primary_key=True) # Clave primaria autogenerada.
     
-    # Relación uno-a-muchos: Una categoría puede tener muchos 'Item'.
-    # 'back_populates' conecta esta relación con el atributo 'categoria' en el modelo 'Item'.
-    items: List["Item"] = Relationship(back_populates="categoria")
+    # MODIFICADO: Relación muchos-a-muchos: Una categoría puede tener muchos 'Item'.
+    # 'back_populates' conecta esta relación con el atributo 'categorias' (plural) en el modelo 'Item'.
+    items: List["Item"] = Relationship(back_populates="categorias", link_model=ItemCategoria)
 
 class ItemEnvio(SQLModel, table=True):
     """
@@ -80,9 +93,13 @@ class Item(ItemBase, table=True):
     """Modelo de la tabla 'item'. Incluye ID y relaciones con Categoria y Envio."""
     id: Optional[int] = Field(default=None, primary_key=True) # Clave primaria autogenerada.
     
-    # Relación muchos-a-uno: Un item pertenece a una 'Categoria'.
+    # MODIFICADO: Se elimina la relación 'categoria' (muchos-a-uno) anterior.
+    
+    # --- NUEVO ---
+    # Relación muchos-a-muchos: Un item puede tener muchas 'Categoria'.
+    # 'link_model=ItemCategoria' especifica la tabla de enlace a usar.
     # 'back_populates' conecta con el atributo 'items' en 'Categoria'.
-    categoria: Optional[Categoria] = Relationship(back_populates="items")
+    categorias: List[Categoria] = Relationship(back_populates="items", link_model=ItemCategoria)
     
     # Relación muchos-a-muchos: Un item puede estar en muchos 'Envio'.
     # 'link_model=ItemEnvio' especifica la tabla de enlace a usar.
@@ -106,7 +123,8 @@ class CategoriaCreate(CategoriaBase):
 
 class ItemCreate(ItemBase):
     """Esquema de datos esperado al crear un Item."""
-    pass # No necesita campos adicionales a ItemBase
+    # MODIFICADO: Se usa una lista de nombres de categorías en lugar de un ID.
+    categoria_nombres: List[str] = Field(default=[], description="Lista de nombres de categorías a las que pertenece el item.")
 
 class EnvioCreate(EnvioBase):
     """Esquema de datos esperado al crear un Envío. Se añade lista de IDs de Items."""
@@ -121,9 +139,10 @@ class CategoriaOut(CategoriaBase):
     id: int
 
 class ItemOut(ItemBase):
-    """Cómo se verá un Item en la respuesta (incluye ID y datos de su categoría)."""
+    """Cómo se verá un Item en la respuesta (incluye ID y datos de sus categorías)."""
+    # MODIFICADO: Se cambia 'categoria' por 'categorias' (plural).
     id: int
-    categoria: Optional[CategoriaOut] = None # Muestra la categoría asociada (si existe).
+    categorias: List[CategoriaOut] = [] # Muestra la lista de categorías asociadas.
 
 class EnvioOut(EnvioBase):
     """Cómo se verá un Envío en la respuesta (incluye ID y la lista de Items)."""
@@ -140,10 +159,11 @@ class CategoriaUpdate(SQLModel):
     descripcion: Optional[str] = None
 
 class ItemUpdate(SQLModel):
-    """Esquema para actualizar un Item (peso, ganancia y/o categoría)."""
+    """Esquema para actualizar un Item (peso, ganancia y/o categorías)."""
+    # MODIFICADO: Se cambia 'categoria_id' por 'categoria_nombres'.
     peso: Optional[float] = None
     ganancia: Optional[float] = None
-    categoria_id: Optional[int] = None
+    categoria_nombres: Optional[List[str]] = Field(default=None, description="Lista de nombres para reemplazar las categorías del item.")
 
 class EnvioUpdate(SQLModel):
     """Esquema para actualizar un Envío (destino y/o lista de items)."""
@@ -196,6 +216,12 @@ def on_startup():
 @app.post("/categorias/", response_model=CategoriaOut, status_code=status.HTTP_201_CREATED, tags=["Categorías"])
 def create_categoria(categoria: CategoriaCreate, db: SessionDep):
     """Crea una nueva categoría (Frágil, Peligroso, etc.)."""
+    
+    # MODIFICADO: Validación para asegurar que el nombre sea único
+    db_categoria_existente = db.query(Categoria).filter(Categoria.nombre == categoria.nombre).first()
+    if db_categoria_existente:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El nombre de la categoría ya existe")
+        
     # Valida los datos recibidos (categoria) contra el modelo CategoriaCreate.
     # Crea una instancia del modelo de tabla Categoria.
     db_categoria = Categoria.model_validate(categoria)
@@ -234,6 +260,14 @@ def update_categoria(categoria_id: int, categoria_data: CategoriaUpdate, db: Ses
     
     # Convierte los datos de actualización a un diccionario, excluyendo los no enviados.
     update_data = categoria_data.model_dump(exclude_unset=True)
+    
+    # MODIFICADO: Validación de unicidad si se cambia el nombre
+    if "nombre" in update_data:
+        nombre_nuevo = update_data["nombre"]
+        db_categoria_existente = db.query(Categoria).filter(Categoria.nombre == nombre_nuevo).first()
+        if db_categoria_existente and db_categoria_existente.id != categoria_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El nombre de la categoría ya existe")
+
     # Actualiza solo los campos proporcionados en el objeto de la BD.
     for key, value in update_data.items():
         setattr(db_categoria, key, value)
@@ -253,6 +287,7 @@ def delete_categoria(categoria_id: int, db: SessionDep):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
     
     # Validación importante: Verifica si la relación 'items' no está vacía.
+    # Esta validación funciona igual para relaciones M2M.
     if db_categoria.items:
         # Si hay items, no permite borrar y lanza un error 400.
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No se puede eliminar la categoría, tiene items asociados.")
@@ -265,49 +300,62 @@ def delete_categoria(categoria_id: int, db: SessionDep):
 # --- Métodos de la API para Items (Actualizados con Categoría) ---
 
 # Define un endpoint para crear un nuevo item.
+# MODIFICADO: Se cambia la lógica para aceptar nombres de categorías (M2M).
 @app.post("/items/", response_model=ItemOut, status_code=status.HTTP_201_CREATED, tags=["Items"])
 def create_item(item_data: ItemCreate, db: SessionDep):
-    """Crea un nuevo item, asignándolo opcionalmente a una categoría existente."""
-    # Validación: Si se proporciona un ID de categoría...
-    if item_data.categoria_id:
-        # ...busca si esa categoría existe en la BD.
-        categoria = db.get(Categoria, item_data.categoria_id)
-        # Si no existe, lanza un error 404.
-        if not categoria:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Categoría con id={item_data.categoria_id} no encontrada")
-            
-    # Crea la instancia del modelo Item a partir de los datos validados.
-    new_item=Item.model_validate(item_data)
+    """Crea un nuevo item, asignándolo a una o más categorías existentes por nombre."""
+    
+    categorias = []
+    # 1. Buscar las categorías por nombre si se proporcionaron
+    if item_data.categoria_nombres:
+        # Busca en la BD todas las Categorias cuyos nombres estén en la lista.
+        categorias = db.query(Categoria).filter(Categoria.nombre.in_(item_data.categoria_nombres)).all()
+        
+        # 2. Validación: Comprueba si se encontraron todas las categorías solicitadas.
+        if len(categorias) != len(set(item_data.categoria_nombres)):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Una o más categorías no fueron encontradas")
+    
+    # 3. Crea el diccionario de datos del item base (excluyendo la lista de nombres).
+    item_dict = item_data.model_dump(exclude={"categoria_nombres"})
+    # 4. Crea la instancia del modelo Item.
+    new_item = Item(**item_dict)
+    
+    # 5. Asigna la lista de objetos Categoria encontrados a la relación.
+    # SQLModel se encargará de crear las entradas en la tabla de enlace 'ItemCategoria'.
+    new_item.categorias = categorias
+    
+    # 6. Guarda en la BD
     db.add(new_item)
     db.commit()
     db.refresh(new_item)
-    # SQLModel cargará automáticamente la relación 'categoria' si existe el ID.
+    # SQLModel cargará automáticamente las categorías para el 'ItemOut'.
     return new_item
 
 # Define un endpoint para obtener todos los items.
 @app.get("/items/", response_model=List[ItemOut], tags=["Items"])
 def get_all_items(db: SessionDep):
-    """Obtiene todos los items y la información de su categoría."""
+    """Obtiene todos los items y la información de sus categorías."""
     # Consulta todos los items. SQLModel se encarga de cargar las relaciones necesarias
-    # para el modelo de respuesta ItemOut (incluyendo la categoría).
+    # para el modelo de respuesta ItemOut (incluyendo las categorías).
     items=db.query(Item).all()
     return items
 
 # Define un endpoint para obtener un item por ID.
 @app.get("/items/{item_id}", response_model=ItemOut, tags=["Items"])
 def get_item_by_id(item_id: int, db: SessionDep):
-    """Obtiene un item por su ID y la información de su categoría."""
+    """Obtiene un item por su ID y la información de sus categorías."""
     # Busca el item por ID.
     item=db.get(Item, item_id)
     if not item :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item no encontrado")
-    # Devuelve el item encontrado (con su categoría cargada si existe).
+    # Devuelve el item encontrado (con sus categorías cargadas si existen).
     return item
 
 # Define un endpoint para actualizar parcialmente un item.
+# MODIFICADO: Se cambia la lógica para actualizar la lista de categorías por nombre.
 @app.patch("/items/{item_id}", response_model=ItemOut, tags=["Items"])
 def update_item_partially(item_id: int, item_update: ItemUpdate, db: SessionDep):
-    """Actualiza parcialmente un item (peso, ganancia o categoria_id)."""
+    """Actualiza parcialmente un item (peso, ganancia o lista de categorías por nombre)."""
     # Busca el item a actualizar.
     db_item=db.get(Item, item_id)
     if not db_item:
@@ -316,34 +364,45 @@ def update_item_partially(item_id: int, item_update: ItemUpdate, db: SessionDep)
     # Obtiene los datos a actualizar (solo los enviados por el cliente).
     update_data=item_update.model_dump(exclude_unset=True)
     
-    # Validación: Si se está cambiando el categoria_id...
-    if "categoria_id" in update_data and update_data["categoria_id"] is not None:
-        # ...verifica que la nueva categoría exista.
-        categoria = db.get(Categoria, update_data["categoria_id"])
-        if not categoria:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Categoría con id={update_data['categoria_id']} no encontrada")
+    # 1. Manejo especial para la lista de categorías
+    if "categoria_nombres" in update_data:
+        # 2. Extrae la lista de nombres (puede ser None, [], o ["nombre1", ...])
+        nombres = update_data.pop("categoria_nombres") 
+        
+        categorias = []
+        # 3. Si la lista no es None (permitiendo que '[]' borre todas las categorías)
+        if nombres is not None: 
+            # 4. Busca los items correspondientes a los nuevos IDs.
+            categorias = db.query(Categoria).filter(Categoria.nombre.in_(nombres)).all()
+            # 5. Validación
+            if len(categorias) != len(set(nombres)):
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Una o más categorías no fueron encontradas para actualizar")
+        
+        # 6. Reemplaza completamente la lista de categorías asociadas.
+        # SQLModel actualizará la tabla de enlace 'ItemCategoria'.
+        db_item.categorias = categorias
 
-    # Actualiza los atributos del objeto en memoria.
+    # 7. Actualiza los atributos restantes del objeto en memoria (peso, ganancia).
     for key, value in update_data.items():
         setattr(db_item, key, value)
 
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
-    # Devuelve el item actualizado (con la categoría actualizada si se cambió).
+    # Devuelve el item actualizado (con la lista de categorías actualizada).
     return db_item
 
 # Define un endpoint para eliminar un item.
 @app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Items"])
 def delete_item(item_id: int, db: SessionDep):
-    """Elimina un item (esto lo quitará también de cualquier envío)."""
+    """Elimina un item (esto lo quitará también de cualquier envío y categoría)."""
     # Busca el item a eliminar.
     item_to_delete = db.get(Item, item_id)
     if not item_to_delete:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item no encontrado")
     
     # Al borrar el Item, SQLAlchemy/SQLModel se encarga automáticamente
-    # de eliminar las referencias en la tabla de enlace 'ItemEnvio'.
+    # de eliminar las referencias en las tablas de enlace 'ItemEnvio' y 'ItemCategoria'.
     db.delete(item_to_delete)
     db.commit()
     # No devuelve contenido.
