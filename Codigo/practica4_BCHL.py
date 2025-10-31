@@ -5,7 +5,7 @@
 # Higuera Pineda Angel Abraham
 # Lorenzo Silva Abad Rey
 
-# Para que pueda arrancar, se debe instalar sqlmodel: pip install sqlmodel
+# Para que pueda empezar, se debe instalar sqlmodel: pip install sqlmodel
 # Recordar que se debe ejecutar/iniciar el servidor en la terminal
 # Con el comando: python -m uvicorn practica1_BCHL:app --reload # Ajusta practica1_BCHL al nombre de tu archivo si es diferente
 # Para ver la pagina y realizar operaciones, visitar: http://127.0.0.1:8000/docs
