@@ -95,8 +95,6 @@ Componentes clave de la solución:
 
 Para la correcta creacion de nuestra práctica, es importante que entendamos las relaciones entre las tecnologías y los conceptos que ya revisados para la creación de una API, esta vez implementando persistencia de datos.
 
-\subsection*{API RESTful}
-Una API RESTful es un estilo de arquitectura para diseñar aplicaciones en red. Se basa en un conjunto de principios que utilizan los métodos estándar de HTTP para realizar operaciones sobre los recursos. Cada recurso. que aqui seran items, es identificable a través de una URL única. Este enfoque simplifica la comunicación entre el cliente y el servidor.\cite{ref1}
 
 \subsection*{Entorno de Trabajo y Herramientas Principales}
 \begin{itemize}
@@ -116,6 +114,37 @@ La persistencia de datos es la capacidad de un sistema para poder conservar la i
     \item \textbf{SQLModel:} Es una librería que combina \textbf{SQLAlchemy} y \textbf{Pydantic}, creada por el mismo autor de FastAPI. Permite definir la estructura de los datos, las validaciones y el esquema de la base de datos en una sola clase, reduciendo la duplicación de código y simplificando el desarrollo. En nuestra práctica, las clases como \texttt{Item} son modelos de SQLModel que representan tanto la tabla en la base de datos como los datos que la API recibe y envía.\cite{ref4}
 \end{itemize}
 
+\subsection*{Relaciones en Bases de Datos}
+\begin{itemize}
+    \item \textbf{Relación Unívoca:} Cada valor de clave primaria se relaciona con sólo un registro en la tabla relacionada.
+    \item \textbf{Uno a varios:} La tabla de claves primaria sólo contiene un registro que se relaciona con ninguno, uno o varios registros en la tabla relacionada.
+    \item \textbf{Varios a varios:} Cada registro en ambas tablas puede estar relacionado con varios registros en la otra tabla. Este tipo de relaciones requieren una tercera tabla, denominada tabla de enlace o asociación, porque los sistemas relacionales no pueden alojar directamente la relación. \cite{ref5}
+\end{itemize}
+
+\subsection*{API CRUD}
+Una API CRUD es una interfaz de programación que permite Crear, Leer, Actualizar y Borrar datos. \cite{ref6}
+
+\subsubsection*{Algoritmo Genético Simple (AGS)}
+Está basado en el proceso genetico de los organismos vivos. 
+Los Algoritmos Geneticos usan una analogía directa con el comportamiento natural. 
+\begin{itemize}
+    \item \textbf{Población:} Trabajan con una poblacion de individuos, cada uno de los cuales representa una solucion factible a un problema dado. A cada individuo se le asigna un valor
+ o puntuacion, relacionado con la bondad de dicha solucion. 
+    \item \textbf{Fitness:} Cuanto mayor sea la adaptacion de un individuo al problema, mayor
+ sera la probabilidad de que el mismo sea seleccionado.
+    \item \textbf{Cruzamiento:} Será seleccionado para reproducirse, cruzando su material genetico con otro individuo seleccionado de igual forma. Este cruce producira nuevos individuos descendientes de los anteriores los cuales comparten algunas de las caractersticas de sus padres. Cuanto menor sea la adaptacion de un
+ individuo, menor sera la probabilidad de que dicho individuo sea seleccionado para
+ la reproduccion, y por tanto de que su material genetico se propague en sucesivas
+ generaciones.\cite{ref7}
+\end{itemize}
+ 
+ De esta manera se produce una nueva poblacion de posibles soluciones, la cual reemplaza a la anterior y verifica  la interesante propiedad de que contiene una mayor
+ proporcion de buenas caractersticas en comparacion con la poblacion anterior. Así a
+ lo largo de las generaciones las buenas caractersticas se propagan a travees de la
+ poblacion. Favoreciendo el cruce de los individuos mejor adaptados, van siendo explo
+radas las areas mas prometedoras del espacio de busqueda. Si el Algoritmo Genetico
+ ha sido bien disenado, la poblacion convergera hacia una solucion optima del proble
+ma.
 \section{Diagrama UML}
 \begin{figure}[H]
     \centering
@@ -200,6 +229,9 @@ Y esto no garantiza que la base de datos y sus tablas ya existan antes de que lo
     \bibitem{ref2} Python Software Foundation. (s.f.). Acerca de Python™. Resumen Ejecutivo. Recuperado el 14 de octubre de 2025, de \url{https://www.python.org/doc/essays/blurb-es/}
     \bibitem{ref3} Ramírez, S. (s.f.). FastAPI. Recuperado el 14 de octubre de 2025, de \url{https://fastapi.tiangolo.com/es/}
     \bibitem{ref4} Ramírez, S. (s.f.). SQLModel. Recuperado el 14 de octubre de 2025, de \url{https://sqlmodel.tiangolo.com/es/}
+    \bibitem{ref5} IBM Control Desk. (s. f.). Relaciones en Bases de Datos. Recuperado el 31 de octubre de 2025, de \url{ https://www.ibm.com/docs/es/control-desk/7.6.1?topic=structure-database-relationships}
+    \bibitem{ref6} Jain, A. (2024, 8 septiembre). What is CRUD API? DEV Community. Recuperado el 31 de octubre de 2025, de \url{https://dev.to/ankitjaininfo/what-is-crud-api-502i}
+    \bibitem{ref7} Tema 2. Algoritmos genéticos. (s. f.). Departamento de Ciencias de la Computación E Inteligencia Artificial. Recuperado el 31 de octubre de 2025, de \url{http://www.sc.ehu.es/ccwbayes/docencia/mmcc/docs/t2geneticos}
 
 \end{thebibliography}
 
