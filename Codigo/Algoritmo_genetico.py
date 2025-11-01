@@ -1,10 +1,10 @@
-#Practica 1: Algoritmo genetico
+#Algoritmo genetico
 #Beltran Saucedo Axel Alejandro
 #Ceron Samperio Lizeth Montserrat
 #Higuera Pineda Angel Abraham
 #Lorenzo Silva Abad Rey
 
-#Librerias a utilizar ss
+#Librerias a utilizar 
 #Random sirve para utilizar funciones aleatorias
 import random
 #Nos permite crear interfaces en Python
