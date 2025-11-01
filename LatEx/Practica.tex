@@ -148,7 +148,7 @@ ma.
 \section{Diagrama UML}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Diagrama.png}
+    
 \end{figure}
 
 
@@ -161,63 +161,7 @@ En la practica anterior, nuestra API gestionaba los datos de los items en una li
 que al reiniciar nuestro servidor, todos los datos se perdian. 
 En cambio, esta vez integramos una base de datos para asegurar la permanencia de los datos.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_1.png}
-\end{figure}
 
-El principal cambio que podemos ver aqui es la adicion de la libreria SQLModel, la cual nos permitira interactuar con la base de datos,
-gracias a sus capacidades provenientes de SQLAlchemy y Pydantic.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_2.png}
-\end{figure}
-
-En esta parte, podemos ver que los modelos de datos fueron redefinidos usando SQLModel y asi poder mapearlos en una tabla en nuestra base de datos.
-Se agrego 'table=true', que le indica a SQLModel que la clase esta representando una tabla en la base.
-Otro cambio es en id, que ahora lo definimos como la clave primaria de nuestra tabla. Esto hara que la base de datos se encargue de ir generando los id's
-de forma automatica.\\
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_3.png}
-\end{figure}
-
-Esta funcion tiene el unico proposito de mostrarnos los datos en el orden deseado, el cual es peso/ganancia/id, ya que originalmente los mostraba en desorden.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_4.png}
-\end{figure}
-
-Aqui tenemos la nueva adicion mas importante, la cual se encargara de la configuracion y manejo de la conexion con la base de datos (que estara en SQLite).
-Esta sera almacenada en un archivo bajo el nombre de database.db.
-Tambien tenemos lo que vendria a ser nuestro 'motor', por decirlo de una forma, que funcionara como el centro de comunicaciones entre la API y nuestro database.db
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_5.png}
-\end{figure}
-
-Esta funcion sera la encargada de la creacion de las tablas y solo se ejecutara una vez al iniciar la aplicacion.
-Crea las tablas correspondientes en la base si es que no existen.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_6.png}
-\end{figure}
-
-Aqui implementamos un sistema de sesiones por peticion. Esto se refiere a que cada vez que la API recibe una solicitud, una nueva sesion de comunicacion con la base de datos
-se abre, y esta misma se cierra en automatico al terminar la solicitud, lo cual nos garantiza un manejo seguro de las conexiones.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{Imagenes/Imagen WEB 3_7.png}
-\end{figure}
-
-Este evento se ejecuta en el instante en el momento en que la API se termine de iniciar,antes de que cualquier usuario mande una peticion y solo se ejecuta una vez.
-Y esto no garantiza que la base de datos y sus tablas ya existan antes de que los usuarios empiezen a mandar peticiones.
 
 \newpage % Opcional, para que las referencias empiecen en una página nueva
 
