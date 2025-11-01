@@ -6,7 +6,6 @@
 #Lorenzo Silva Abad Rey
 
 
-
 #--- Modulos ---
 from fastapi import FastAPI, HTTPException, status, Depends
 from sqlmodel import Field, create_engine, Session, SQLModel, Relationship
