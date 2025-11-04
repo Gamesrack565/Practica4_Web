@@ -11,8 +11,8 @@ from Rutas import categorias, items, envios, optimizar
 
 app = FastAPI(
     title="Práctica 4: Relaciones con Base de Datos (Ordenado)",
-    description="API para gestionar Items, Categorías y Envíos, con persistencia de datos."
-    version="2.1.1",
+    description="API para gestionar Items, Categorías y Envíos, con persistencia de datos.",
+    version="2.1.1"
 )
 
 @app.on_event("startup")
