@@ -1,3 +1,10 @@
+#Práctica 4: Relaciones con base de datos
+#Equipo:
+#Beltrán Saucedo Axel Alejandro
+#Cerón Samperio Lizeth Montserrat
+#Higuera Pineda Angel Abraham
+#Lorenzo Silva Abad Rey
+
 from fastapi import FastAPI
 from Servicios.base_Datos import create_db_and_tables
 from Rutas import categorias, items, envios, optimizar
