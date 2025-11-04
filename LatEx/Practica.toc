@@ -1,12 +1,6 @@
 \babel@toc {spanish}{}\relax 
 \contentsline {section}{\numberline {1}Introducción}{2}{section.1}%
 \contentsline {section}{\numberline {2}Fundamentos Teóricos}{2}{section.2}%
-<<<<<<< HEAD
-\contentsline {section}{\numberline {3}Diagrama UML}{6}{section.3}%
-\contentsline {section}{\numberline {4}Implementación}{7}{section.4}%
-\contentsline {section}{Referencias}{13}{Item.12}%
-=======
-\contentsline {section}{\numberline {3}Diagrama UML}{5}{section.3}%
-\contentsline {section}{\numberline {4}Implementación}{5}{section.4}%
-\contentsline {section}{Referencias}{6}{section*.9}%
->>>>>>> 7d864be4b5a5b04fabcc156fd569caccca3a98e0
+\contentsline {section}{\numberline {3}Diagrama UML}{7}{section.3}%
+\contentsline {section}{\numberline {4}Implementación}{8}{section.4}%
+\contentsline {section}{Referencias}{14}{Item.12}%
